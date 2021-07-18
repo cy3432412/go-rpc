@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-//定义GobCodec结构体
+// GobCodec 定义GobCodec结构体
 type GobCodec struct {
 	conn io.ReadWriteCloser //链接
 	buf  *bufio.Writer      //buffer
@@ -17,7 +17,7 @@ type GobCodec struct {
 
 var _ Codec = (*GobCodec)(nil)
 
-//实例化gob
+// NewGobCodec 实例化gob
 func NewGobCodec(conn io.ReadWriteCloser) Codec {
 	buf := bufio.NewWriter(conn)
 	return &GobCodec{
@@ -28,12 +28,12 @@ func NewGobCodec(conn io.ReadWriteCloser) Codec {
 	}
 }
 
-//读取头
+// ReadHeader 读取头
 func (c *GobCodec) ReadHeader(h *Header) error {
 	return c.dec.Decode(h)
 }
 
-//读取结构体
+// ReadBody 读取结构体
 func (c *GobCodec) ReadBody(body interface{}) error {
 	return c.dec.Decode(body)
 }
@@ -59,7 +59,7 @@ func (c *GobCodec) Write(h *Header, body interface{}) (err error) {
 	return nil
 }
 
-//关闭连接
+// Close 关闭连接
 func (c *GobCodec) Close() error {
 	return c.conn.Close()
 }

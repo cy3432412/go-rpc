@@ -20,6 +20,7 @@ import (
 | Option{MagicNumber: xxx, CodecType: xxx} | Header{ServiceMethod ...} | Body interface{} |
 | <------      固定 JSON 编码      ------>  | <-------   编码方式由 CodeType 决定   ------->|
 */
+
 const MagicNumber = 0x3bef5c
 
 type Option struct {
@@ -32,17 +33,17 @@ var DefaultOption = &Option{
 	CodecType:   codec.GobType,
 }
 
-//RPC Server
+// Server server结构体
 type Server struct{}
 
-//Server实例
+// NewServer 新建实例
 func NewServer() *Server {
 	return &Server{}
 }
 
 var DefaultServer = NewServer()
 
-//Accept方法
+// Accept 连接请求成功
 func (server *Server) Accept(lis net.Listener) {
 	for {
 		conn, err := lis.Accept()
@@ -58,8 +59,7 @@ func Accept(lis net.Listener) {
 	DefaultServer.Accept(lis)
 }
 
-//实现conn
-
+// ServeConn 实现conn
 func (server *Server) ServeConn(conn io.ReadWriteCloser) {
 	defer func() {
 		_ = conn.Close()
@@ -84,6 +84,7 @@ func (server *Server) ServeConn(conn io.ReadWriteCloser) {
 
 var invaildRequest = struct{}{}
 
+//服务端编码格式
 func (server *Server) serveCodec(cc codec.Codec) {
 	sending := new(sync.Mutex)
 	wg := new(sync.WaitGroup)
@@ -110,6 +111,7 @@ type request struct {
 	argv, replyv reflect.Value
 }
 
+// 读请求头
 func (server *Server) readRequestHeader(cc codec.Codec) (*codec.Header, error) {
 	var h codec.Header
 	if err := cc.ReadHeader(&h); err != nil {
