@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gorpc"
 	"log"
 	"net"
@@ -11,6 +10,12 @@ import (
 
 //启动服务
 func startServer(addr chan string) {
+	var foo gorpc.Foo
+	//注册foo
+	if err := gorpc.Register(&foo); err != nil {
+		log.Fatal("register error: ", err)
+	}
+	//随机选择一个空闲port
 	l, err := net.Listen("tcp", ":0")
 	//错误处理
 	if err != nil {
@@ -41,12 +46,16 @@ func main() {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			args := fmt.Sprintf("gorpc req %d", i)
-			var reply string
+			args := &gorpc.Args{
+				Num1: i,
+				Num2: i * i,
+			}
+
+			var reply int
 			if err := client.Call("Foo.Sum", args, &reply); err != nil {
 				log.Fatal("call Foo Sum error : ", err)
 			}
-			log.Println("reply: ", reply)
+			log.Printf("%d + %d = %d", args.Num1, args.Num2, reply)
 		}(i)
 
 	}
