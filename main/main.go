@@ -5,6 +5,7 @@ import (
 	"gorpc"
 	"log"
 	"net"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -17,14 +18,16 @@ func startServer(addr chan string) {
 		log.Fatal("register error: ", err)
 	}
 	//随机选择一个空闲port
-	l, err := net.Listen("tcp", ":0")
+	l, err := net.Listen("tcp", ":9999")
 	//错误处理
 	if err != nil {
 		log.Fatal("network error:", err)
 	}
 	log.Println("Start gorpc server on", l.Addr())
 	addr <- l.Addr().String()
-	gorpc.Accept(l)
+	//gorpc.Accept(l)
+	gorpc.HandleHTTP()
+	_ = http.Serve(l, nil)
 }
 
 //实现了一个极简client用于测试服务端
@@ -34,7 +37,7 @@ func main() {
 	// 先启动服务端，确保服务端监听正常
 	go startServer(addr)
 
-	client, _ := gorpc.Dial("tcp", <-addr)
+	client, _ := gorpc.DialHTTP("tcp", <-addr)
 	defer func() {
 		_ = client.Close()
 	}()
